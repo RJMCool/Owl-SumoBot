@@ -1,0 +1,121 @@
+#define CUSTOM_SETTINGS
+#define INCLUDE_GAMEPAD_MODULE
+#include <DabbleESP32.h>
+ 
+#define enB 32
+#define enA 33
+#define in4 21
+#define in3 19
+#define in2 5
+#define in1 18
+
+int motorSpeedA = 0;
+int motorSpeedB = 0;
+
+const int freq = 30000;
+const int pwmChannel = 1;
+const int pwmChannel2 = 2;
+const int res = 8;
+
+
+void setup() {
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+
+ 
+
+  Serial.begin(9600);
+  Dabble.begin("Robot5");       //set bluetooth name of your device
+ 
+  ledcSetup(pwmChannel, freq, res);
+  ledcAttachPin(enA, pwmChannel);
+  ledcAttachPin(enB, pwmChannel2);
+}
+
+ 
+
+void loop() {
+  Dabble.processInput();
+  int xAxis = GamePad.getXaxisData();
+  Serial.print(" xAxis: ");
+  Serial.print(xAxis);
+  int yAxis = GamePad.getYaxisData();
+  Serial.print("  yAxis: ");
+  Serial.print(yAxis);
+
+ 
+  //forward
+  if (yAxis > 1) {
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+    motorSpeedA = map(yAxis, 0, 7, 160, 255);
+    motorSpeedB = map(yAxis, 0, 7, 160, 255);
+  }
+ 
+  //backward
+  else if (yAxis < -1) {
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+    motorSpeedA = map(yAxis, 0, -6, 160, 255);
+    motorSpeedB = map(yAxis, 0, -6, 160, 255);
+  }
+ 
+ 
+  else {
+    motorSpeedA = 0;
+    motorSpeedB = 0;
+  }
+
+ 
+
+   //X-axis used for left and right control
+  if (xAxis < -1) {
+    int xMapped = map(xAxis, 0, -7, 160, 255);
+    // Move to left - decrease left motor speed, increase right motor speed
+    motorSpeedB = motorSpeedB - xMapped;
+    motorSpeedA = motorSpeedA + xMapped;
+    // Confine the range from 0 to 255
+    if (motorSpeedB < 160) {
+      motorSpeedB = 160;}
+    if (motorSpeedB > 255) {
+      motorSpeedB = 255;}
+    if (motorSpeedA < 160) {
+      motorSpeedA = 160;}
+    if (motorSpeedA > 255) {
+      motorSpeedA = 255;}
+  }
+ 
+  if (xAxis > 1) {
+    int xMapped = map(xAxis, 0, 6, 160, 255);
+    // Move right - decrease right motor speed, increase left motor speed
+    motorSpeedB = motorSpeedB + xMapped;
+    motorSpeedA = motorSpeedA - xMapped;
+    // Confine the range from 0 to 255
+    if (motorSpeedB < 160) {
+      motorSpeedB = 160;}
+    if (motorSpeedB > 255) {
+      motorSpeedB = 255;}
+    if (motorSpeedA < 160) {
+      motorSpeedA = 160;}
+    if (motorSpeedA > 255) {
+      motorSpeedA = 255;}
+  }
+  Serial.print("  motorSpeedA = ");
+  Serial.print(motorSpeedA);
+  Serial.print("  motorSpeedB = ");
+  Serial.println(motorSpeedB);
+  ledcWrite(pwmChannel, motorSpeedA); // Send PWM signal to motor A
+  ledcWrite(pwmChannel2, motorSpeedB); // Send PWM signal to motor B
+}
