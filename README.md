@@ -25,8 +25,3 @@ The Ramp is used making 3 different triangles instead of using a horizonal cylin
 There are holes there to connect with the Chassis with the same diameter. 
 
 In the middle there is a triangle used which was used to make sure that the the enemy sumobot is pushing on a corner instead of straight on the Owl. The triangle had a width of 25 mm and a length of 43 mm. Then there is another hole with a diameter of 17.34 mm.
-
-The Esp 32:
-
-
-
